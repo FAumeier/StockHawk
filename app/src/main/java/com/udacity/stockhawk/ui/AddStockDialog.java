@@ -5,20 +5,30 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.util.NetworkUtils;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import yahoofinance.Stock;
+import yahoofinance.YahooFinance;
 
 
 public class AddStockDialog extends DialogFragment {
@@ -26,6 +36,7 @@ public class AddStockDialog extends DialogFragment {
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.dialog_stock)
     EditText stock;
+
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -47,16 +58,26 @@ public class AddStockDialog extends DialogFragment {
         builder.setView(custom);
 
         builder.setMessage(getString(R.string.dialog_title));
-        builder.setPositiveButton(getString(R.string.dialog_add),
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        addStock();
-                    }
-                });
+        builder.setPositiveButton(getString(R.string.dialog_add), null);
         builder.setNegativeButton(getString(R.string.dialog_cancel), null);
 
         Dialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean stockAdded = addStock();
+                        if (stockAdded) {
+                            dismiss();
+                        }
+                    }
+                });
+            }
+        });
         Window window = dialog.getWindow();
         if (window != null) {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -65,13 +86,45 @@ public class AddStockDialog extends DialogFragment {
         return dialog;
     }
 
-    private void addStock() {
+
+    private boolean addStock() {
+        boolean isStockAvailable = false;
+        Stock newStock = null;
         Activity parent = getActivity();
-        if (parent instanceof MainActivity) {
-            ((MainActivity) parent).addStock(stock.getText().toString());
+        if (NetworkUtils.networkUp((ConnectivityManager) parent.getSystemService(Context.CONNECTIVITY_SERVICE))) {
+            try {
+                newStock = new GetStockTask().execute(stock.getText().toString()).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            isStockAvailable = newStock != null && newStock.getName() != null;
+            if (isStockAvailable) {
+                if (parent instanceof MainActivity) {
+                    ((MainActivity) parent).addStock(stock.getText().toString());
+                }
+            } else {
+                stock.setError("This Stock could not be found");
+            }
         }
-        dismissAllowingStateLoss();
+        return isStockAvailable;
     }
+
+    private class GetStockTask extends AsyncTask<String, Void, Stock> {
+        @Override
+        protected Stock doInBackground(String... params) {
+            Stock stock = null;
+            String symbol = params[0];
+            try {
+                stock = YahooFinance.get(symbol);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return stock;
+        }
+    }
+
 
 
 }
