@@ -63,7 +63,7 @@ public class AddStockDialog extends DialogFragment {
 
         Dialog dialog = builder.create();
         final Button negativeButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
-        negativeButton.setContentDescription(getString(R.string.description_negative_button));
+        negativeButton.setContentDescription(getString(R.string.description_negative_button)); //FIXME: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.widget.Button.setContentDescription(java.lang.CharSequence)' on a null object reference
         final Button positiveButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.setContentDescription(getString(R.string.description_positive_button));
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
