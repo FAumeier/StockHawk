@@ -36,6 +36,9 @@ public class AddStockDialog extends DialogFragment {
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.dialog_stock)
     EditText stock;
+    Button negativeButton;
+    Button positiveButton;
+    Dialog dialog;
 
 
     @Override
@@ -61,15 +64,15 @@ public class AddStockDialog extends DialogFragment {
         builder.setPositiveButton(getString(R.string.dialog_add), null);
         builder.setNegativeButton(getString(R.string.dialog_cancel), null);
 
-        Dialog dialog = builder.create();
-        final Button negativeButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
-        negativeButton.setContentDescription(getString(R.string.description_negative_button)); //FIXME: java.lang.NullPointerException: Attempt to invoke virtual method 'void android.widget.Button.setContentDescription(java.lang.CharSequence)' on a null object reference
-        final Button positiveButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-        positiveButton.setContentDescription(getString(R.string.description_positive_button));
+        dialog = builder.create();
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
             @Override
             public void onShow(DialogInterface dialog) {
+                positiveButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                positiveButton.setContentDescription(getString(R.string.description_positive_button));
+                negativeButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
+                negativeButton.setContentDescription(getString(R.string.description_negative_button));
                 positiveButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -88,7 +91,6 @@ public class AddStockDialog extends DialogFragment {
 
         return dialog;
     }
-
 
     private boolean addStock() {
         boolean isStockAvailable = false;
