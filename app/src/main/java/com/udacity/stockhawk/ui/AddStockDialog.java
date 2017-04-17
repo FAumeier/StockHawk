@@ -62,12 +62,15 @@ public class AddStockDialog extends DialogFragment {
         builder.setNegativeButton(getString(R.string.dialog_cancel), null);
 
         Dialog dialog = builder.create();
+        final Button negativeButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_NEGATIVE);
+        negativeButton.setContentDescription(getString(R.string.description_negative_button));
+        final Button positiveButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.setContentDescription(getString(R.string.description_positive_button));
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
             @Override
             public void onShow(DialogInterface dialog) {
-                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                button.setOnClickListener(new View.OnClickListener() {
+                positiveButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         boolean stockAdded = addStock();
