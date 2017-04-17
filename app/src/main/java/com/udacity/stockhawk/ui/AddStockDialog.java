@@ -105,7 +105,7 @@ public class AddStockDialog extends DialogFragment {
                     ((MainActivity) parent).addStock(stock.getText().toString());
                 }
             } else {
-                stock.setError("This Stock could not be found");
+                stock.setError(getString(R.string.error_stock_not_found));
             }
         }
         return isStockAvailable;
